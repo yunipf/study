@@ -1,7 +1,12 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)">
-  <Profiles>
-    <Profile Name="(Default)" />
-  </Profiles>
-  <Settings />
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="TweetTest.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ConsumerKey" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">jxum2Sv4NAs46vX7edteSO9u9</Value>
+    </Setting>
+    <Setting Name="ConsumerSecret" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">5GryxvzxjHMgSpRReo5rsIAAdu3dlbBXQuRMmDUcAZrsNDCo31</Value>
+    </Setting>
+  </Settings>
 </SettingsFile>
