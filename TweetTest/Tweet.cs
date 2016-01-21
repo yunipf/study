@@ -21,30 +21,12 @@ namespace TweetTest
 
         public static void TweetTest(string text)
         {
-            Tokens tokens;
+            Tokens tokens = null;
             string consumerKey = Properties.Settings.Default.ConsumerKey;
             string consumerSecret = Properties.Settings.Default.ConsumerSecret;
 
             // ユーザデータの存在確認。無かったら認証へ
-            if (!System.IO.File.Exists(FileName))
-            {
-                var session = OAuth.Authorize(consumerKey,consumerSecret);
-                string url = session.AuthorizeUri.AbsoluteUri;
-                System.Diagnostics.Process.Start(url);
-
-                string pinCode = Interaction.InputBox("PINコードを入力", "", "", -1, -1);
-                if(pinCode.Length < 7)
-                {
-                    return;
-                }
-
-                tokens = OAuth.GetTokens(session,pinCode);
-
-                // ユーザデータの保存
-                TweetUserSerialize.Serialize(new TweetUser(tokens.UserId,tokens.ScreenName,tokens.AccessToken,tokens.AccessTokenSecret));
-
-            }
-            else
+            if (System.IO.File.Exists(FileName))
             {
                 // ユーザデータからトークン作成
                 TweetUser user = TweetUserSerialize.Deserialize();
@@ -53,19 +35,68 @@ namespace TweetTest
                 tokens = Tokens.Create(consumerKey, consumerSecret, accessToken, accessTokenSecret);
 
                 // ScreenNameを動的に取得、設定
-                var res = tokens.Account.VerifyCredentials();
-                tokens.ScreenName = res.ScreenName;
+                try
+                {
+                    var res = tokens.Account.VerifyCredentials();
+                    tokens.ScreenName = res.ScreenName;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    MessageBox.Show("アプリ連携が解除されています。認証をやり直してください。");
+                    // ユーザデータを削除することで認証へ
+                    System.IO.File.Delete(FileName);
+                }
+
             }
 
-            var result = MessageBox.Show(
-                "ツイートしてもよろしいですか？\r\r" + tokens.ScreenName + ":\r" + text,
+            // 認証
+            if(!System.IO.File.Exists(FileName))
+            {
+                var session = OAuth.Authorize(consumerKey, consumerSecret);
+                string url = session.AuthorizeUri.AbsoluteUri;
+                System.Diagnostics.Process.Start(url);
+
+                string pinCode = Interaction.InputBox("PINコードを入力", "", "", -1, -1);
+                if (pinCode.Length < 7)
+                {
+                    return;
+                }
+
+                try
+                {
+                    tokens = OAuth.GetTokens(session, pinCode);
+                    // ユーザデータの保存
+                    TweetUserSerialize.Serialize(new TweetUser(tokens.UserId, tokens.ScreenName, tokens.AccessToken, tokens.AccessTokenSecret));
+                }
+                catch(Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    MessageBox.Show("認証に失敗しました。");
+                }
+
+            }
+
+            if(tokens != null)
+            {
+                var result = MessageBox.Show(
+                "ツイートしてもよろしいですか？\r\r" + tokens.ScreenName + ":" + text,
                 "確認",
                 MessageBoxButtons.OKCancel);
 
-            if (result == DialogResult.OK)
-            {
-                tokens.Statuses.Update(new { status = text });
+                if (result == DialogResult.OK)
+                {
+                    try
+                    {
+                        tokens.Statuses.Update(new { status = text });
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                }
             }
+            
 
         }
         
